@@ -13,6 +13,9 @@ const NUTRIENTES = [
   { key: 'vit_c_mg',     label: 'Vitamina C',    unit: 'mg',   reqKey: 'vit_c_min' },
   { key: 'vit_b1_mg',    label: 'Vitamina B1',   unit: 'mg',   reqKey: 'vit_b1_min' },
   { key: 'vit_b2_mg',    label: 'Vitamina B2',   unit: 'mg',   reqKey: 'vit_b2_min' },
+  { key: 'zinc_mg',      label: 'Zinc',          unit: 'mg',   reqKey: 'zinc_min',    estimada: true },
+  { key: 'yodo_ug',      label: 'Yodo',          unit: 'µg',   reqKey: 'yodo_min',    estimada: true },
+  { key: 'selenio_ug',   label: 'Selenio',       unit: 'µg',   reqKey: 'selenio_min', estimada: true },
 ]
 
 const COLORES_PIE = ['#16a34a', '#3b82f6', '#f59e0b', '#ef4444']
@@ -169,8 +172,8 @@ export default function DetalleNutricional({ resultado, onVolver }) {
         ))}
 
         <div className="alerta aviso" style={{ marginTop: 16 }}>
-          ⚠ Los valores de micronutrientes dependen de la completitud de la tabla nutricional.
-          Los nutrientes sin dato en la tabla no se incluyen en la optimización.
+          * Los valores de fibra, zinc, yodo y selenio son estimaciones por grupo alimentario.
+          Para mayor precisión, en una próxima versión se integrarán datos de USDA FoodData Central.
         </div>
       </div>
 
