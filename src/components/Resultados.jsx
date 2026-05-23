@@ -105,6 +105,8 @@ export default function Resultados({ resultado, onVerDetalle, onNuevoCalculo }) 
             { label: 'Proteínas',     valor: Math.round(resultado.aportes.proteinas_g),  unit: 'g' },
             { label: 'Grasas',        valor: Math.round(resultado.aportes.grasas_g),     unit: 'g' },
             { label: 'Carbohidratos', valor: Math.round(resultado.aportes.hc_g),         unit: 'g' },
+            { label: 'Fibra*',        valor: resultado.aportes.fibra_g?.toFixed(1) ?? '—', unit: 'g' },
+            { label: 'Peso total',    valor: Math.round(resultado.aportes.gramos_total ?? 0), unit: 'g' },
           ].map(m => (
             <div key={m.label} className="macro-item">
               <div className="macro-valor">{m.valor}<small style={{ fontSize: '.65rem' }}>{m.unit}</small></div>
@@ -112,6 +114,9 @@ export default function Resultados({ resultado, onVerDetalle, onNuevoCalculo }) 
             </div>
           ))}
         </div>
+        <p style={{ fontSize: '.72rem', color: 'var(--gris-suave)', marginTop: 10 }}>
+          * Fibra estimada según grupo alimentario — no proviene de la tabla nutricional original.
+        </p>
       </div>
 
       {/* CTA detalle */}

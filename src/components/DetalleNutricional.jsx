@@ -2,16 +2,17 @@ import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recha
 
 // Definición de nutrientes con sus unidades y rangos
 const NUTRIENTES = [
-  { key: 'energia_kcal', label: 'Energía',     unit: 'kcal', reqKey: 'energia_min',   maxKey: 'energia_max' },
-  { key: 'proteinas_g',  label: 'Proteínas',   unit: 'g',    reqKey: 'proteinas_min' },
-  { key: 'grasas_g',     label: 'Grasas',      unit: 'g',    reqKey: 'grasas_min',    maxKey: 'grasas_max' },
-  { key: 'hc_g',         label: 'Carbohidratos', unit: 'g',  reqKey: 'hc_min' },
-  { key: 'calcio_mg',    label: 'Calcio',       unit: 'mg',  reqKey: 'calc_min' },
-  { key: 'hierro_mg',    label: 'Hierro',       unit: 'mg',  reqKey: 'hierro_min' },
-  { key: 'vit_a_ui',     label: 'Vitamina A',   unit: 'UI',  reqKey: 'vit_a_min_ui' },
-  { key: 'vit_c_mg',     label: 'Vitamina C',   unit: 'mg',  reqKey: 'vit_c_min' },
-  { key: 'vit_b1_mg',    label: 'Vitamina B1',  unit: 'mg',  reqKey: 'vit_b1_min' },
-  { key: 'vit_b2_mg',    label: 'Vitamina B2',  unit: 'mg',  reqKey: 'vit_b2_min' },
+  { key: 'energia_kcal', label: 'Energía',       unit: 'kcal', reqKey: 'energia_min', maxKey: 'energia_max' },
+  { key: 'proteinas_g',  label: 'Proteínas',     unit: 'g',    reqKey: 'proteinas_min' },
+  { key: 'grasas_g',     label: 'Grasas',        unit: 'g',    reqKey: 'grasas_min',  maxKey: 'grasas_max' },
+  { key: 'hc_g',         label: 'Carbohidratos', unit: 'g',    reqKey: 'hc_min' },
+  { key: 'fibra_g',      label: 'Fibra',         unit: 'g',    reqKey: 'fibra_min',   estimada: true },
+  { key: 'calcio_mg',    label: 'Calcio',        unit: 'mg',   reqKey: 'calc_min' },
+  { key: 'hierro_mg',    label: 'Hierro',        unit: 'mg',   reqKey: 'hierro_min' },
+  { key: 'vit_a_ui',     label: 'Vitamina A',    unit: 'UI',   reqKey: 'vit_a_min_ui' },
+  { key: 'vit_c_mg',     label: 'Vitamina C',    unit: 'mg',   reqKey: 'vit_c_min' },
+  { key: 'vit_b1_mg',    label: 'Vitamina B1',   unit: 'mg',   reqKey: 'vit_b1_min' },
+  { key: 'vit_b2_mg',    label: 'Vitamina B2',   unit: 'mg',   reqKey: 'vit_b2_min' },
 ]
 
 const COLORES_PIE = ['#16a34a', '#3b82f6', '#f59e0b', '#ef4444']
@@ -35,14 +36,16 @@ function etiquetaEstado(pct) {
 function BarraNutriente({ nutriente, aporte, req, maxReq }) {
   const pct = req > 0 ? (aporte / req) * 100 : 100
   const estado = claseEstado(pct)
-  // La barra se llena hasta 100% (mínimo), el exceso no alarga la barra
   const anchoVisual = Math.min(pct, 150)
-  const anchoMax = 150  // referencia visual del 150%
+  const anchoMax = 150
 
   return (
     <div className="nutriente-row">
       <div className="nutriente-header">
-        <span className="nutriente-nombre">{nutriente.label}</span>
+        <span className="nutriente-nombre">
+          {nutriente.label}
+          {nutriente.estimada && <span style={{ fontSize: '.72rem', color: 'var(--gris-suave)', marginLeft: 4 }}>*estimada</span>}
+        </span>
         <span className={`nutriente-pct ${estado}`}>
           {etiquetaEstado(pct)} · {Math.round(pct)}%
         </span>
