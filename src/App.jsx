@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Configuracion from './components/Configuracion.jsx'
 import Resultados from './components/Resultados.jsx'
 import DetalleNutricional from './components/DetalleNutricional.jsx'
@@ -10,7 +10,27 @@ import ResultadosFamilia from './components/ResultadosFamilia.jsx'
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
 export default function App() {
-  const [modo, setModo]           = useState('individual')  // 'individual' | 'familia' | 'analizador'
+  const [modo, setModo]           = useState('individual')
+  const [sepaStatus, setSepaStatus] = useState(null)
+
+  // Consultar estado SEPA al montar
+  useEffect(() => {
+    fetch(`${API_URL}/api/status`)
+      .then(r => r.json())
+      .then(d => setSepaStatus(d))
+      .catch(() => {})
+    // Reintentar cada 30s hasta que SEPA esté listo
+    const interval = setInterval(() => {
+      fetch(`${API_URL}/api/status`)
+        .then(r => r.json())
+        .then(d => {
+          setSepaStatus(d)
+          if (d.sepa_listo) clearInterval(interval)
+        })
+        .catch(() => {})
+    }, 30000)
+    return () => clearInterval(interval)
+  }, [])  // 'individual' | 'familia' | 'analizador'
   const [vista, setVista]         = useState('form')        // 'form' | 'resultados' | 'detalle'
   const [resultado, setResultado] = useState(null)
   const [cargando, setCargando]   = useState(false)
@@ -92,6 +112,34 @@ export default function App() {
         <h1>🥗 NutriPlan</h1>
         <p>Dieta nutritiva y económica · Requerimientos OMS · Argentina</p>
       </header>
+
+      {/* Banner estado SEPA */}
+      {sepaStatus && !sepaStatus.sepa_listo && (
+        <div style={{
+          background: '#fffbeb', border: '1px solid #fde68a',
+          borderRadius: 8, padding: '8px 14px', marginBottom: 12,
+          fontSize: '.78rem', color: '#92400e', display: 'flex',
+          alignItems: 'center', gap: 8,
+        }}>
+          {sepaStatus.sepa_status === 'descargando'
+            ? '⏳ Actualizando precios reales SEPA...'
+            : sepaStatus.sepa_status === 'error'
+            ? '⚠ No se pudo cargar SEPA — usando precios de referencia'
+            : '⏳ Cargando precios SEPA...'}
+          <span style={{ color: '#b45309', fontStyle: 'italic' }}>
+            (los costos mostrados son estimados hasta que termine)
+          </span>
+        </div>
+      )}
+      {sepaStatus?.sepa_listo && (
+        <div style={{
+          background: '#f0fdf4', border: '1px solid #bbf7d0',
+          borderRadius: 8, padding: '6px 14px', marginBottom: 12,
+          fontSize: '.78rem', color: '#15803d',
+        }}>
+          ✅ Precios actualizados desde SEPA datos.gob.ar
+        </div>
+      )}
 
       {/* Selector de modo */}
       {vista === 'form' && (
