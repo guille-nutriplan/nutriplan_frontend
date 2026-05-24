@@ -273,9 +273,8 @@ export default function ListaImprimible({ resultado, onCerrar }) {
             flexWrap: 'wrap', gap: 8,
           }}>
             <div style={{ fontSize: '.8rem', color: '#6b7280' }}>
-              {resultado.alimentos.length} productos · {resultado.aportes.energia_kcal.toFixed(0)} kcal
-            </div>
-            <div style={{ display: 'flex', gap: 24 }}>
+              {resultado.alimentos.length} productos · {resultado.aportes.energia_kcal.toFixed(0)} kcal</div>
+           <div style={{ display: 'flex', gap: 24 }}>
               <div style={{ textAlign: 'right' }}>
                 <div style={{ fontSize: '.75rem', color: '#6b7280', textTransform: 'uppercase' }}>Costo diario</div>
                 <div style={{ fontWeight: 800, color: '#16a34a', fontSize: '1.1rem' }}>{formatARS(resultado.costo_diario)}</div>
@@ -284,9 +283,19 @@ export default function ListaImprimible({ resultado, onCerrar }) {
                 <div style={{ fontSize: '.75rem', color: '#6b7280', textTransform: 'uppercase' }}>Costo mensual</div>
                 <div style={{ fontWeight: 800, color: '#16a34a', fontSize: '1.1rem' }}>{formatARS(resultado.costo_mensual)}</div>
               </div>
+              <div style={{ textAlign: 'right', borderLeft: '2px solid #16a34a', paddingLeft: 16 }}>
+                <div style={{ fontSize: '.75rem', color: '#166534', textTransform: 'uppercase', fontWeight: 700 }}>🛒 Total supermercado</div>
+                <div style={{ fontWeight: 800, color: '#16a34a', fontSize: '1.1rem' }}>
+                  {formatARS(resultado.alimentos.reduce((sum, item) => {
+                    const env = calcularEnvase(item.nombre, item.grupo, item.gramos)
+                    if (!env || item.costo_ars <= 0) return sum + item.costo_ars
+                    return sum + (item.costo_ars / item.gramos) * (env.tamEnvase * env.unidades)
+                  }, 0))}
+                </div>
+                <div style={{ fontSize: '.68rem', color: '#9ca3af' }}>(envases mínimos)</div>
+              </div>
             </div>
           </div>
-
           {/* Pie de página */}
           <div style={{
             marginTop: 16, paddingTop: 8, borderTop: '1px solid #e5e7eb',
