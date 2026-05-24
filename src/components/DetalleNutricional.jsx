@@ -151,8 +151,8 @@ export default function DetalleNutricional({ resultado, onVolver }) {
           <BarraNutriente
             key={n.key}
             nutriente={n}
-            aporte={aportes[n.key]}
-            req={req_oms[n.reqKey]}
+            aporte={aportes[n.key] ?? 0}
+            req={req_oms[n.reqKey] ?? 0}
             maxReq={n.maxKey ? req_oms[n.maxKey] : null}
           />
         ))}
@@ -165,8 +165,8 @@ export default function DetalleNutricional({ resultado, onVolver }) {
           <BarraNutriente
             key={n.key}
             nutriente={n}
-            aporte={aportes[n.key]}
-            req={req_oms[n.reqKey]}
+            aporte={aportes[n.key] ?? 0}
+            req={req_oms[n.reqKey] ?? 0}
             maxReq={n.maxKey ? req_oms[n.maxKey] : null}
           />
         ))}
