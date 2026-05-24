@@ -1,3 +1,6 @@
+import { useState } from 'react'
+import ListaImprimible from './ListaImprimible.jsx'
+
 const GRUPOS_ICONOS = {
   Cereales:    '🌾',
   Leguminosas: '🫘',
@@ -26,6 +29,7 @@ function formatARS(n) {
 }
 
 export default function Resultados({ resultado, onVerDetalle, onNuevoCalculo }) {
+  const [mostrarLista, setMostrarLista] = useState(false)
   // Agrupar alimentos por grupo
   const grupos = {}
   for (const al of resultado.alimentos) {
@@ -155,9 +159,20 @@ export default function Resultados({ resultado, onVerDetalle, onNuevoCalculo }) 
         📊 Ver detalle nutricional completo
       </button>
 
+      <button className="btn-secundario" style={{ width: '100%', marginTop: 8, marginBottom: 8 }}
+        onClick={() => setMostrarLista(true)}>
+        🛒 Ver lista de compras imprimible
+      </button>
+
       <div style={{ fontSize: '.78rem', color: 'var(--gris-suave)', textAlign: 'center', marginBottom: 16 }}>
         Incluye vitaminas, minerales y comparación con requerimientos OMS
       </div>
+      {mostrarLista && (
+        <ListaImprimible
+          resultado={resultado}
+          onCerrar={() => setMostrarLista(false)}
+        />
+      )}
     </div>
   )
 }
