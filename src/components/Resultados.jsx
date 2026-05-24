@@ -35,6 +35,30 @@ export default function Resultados({ resultado, onVerDetalle, onNuevoCalculo }) 
 
   const totalGramos = resultado.alimentos.reduce((s, a) => s + a.gramos, 0)
 
+  // Pantalla especial para 0-6 meses
+  if (resultado.solo_leche_materna) {
+    return (
+      <div>
+        <div className="card" style={{ textAlign: 'center', padding: 32 }}>
+          <div style={{ fontSize: '3rem', marginBottom: 16 }}>🤱</div>
+          <div style={{ fontWeight: 700, fontSize: '1.2rem', color: 'var(--verde)', marginBottom: 12 }}>
+            Lactante 0–6 meses
+          </div>
+          <p style={{ color: 'var(--gris-texto)', lineHeight: 1.7, marginBottom: 16 }}>
+            {resultado.mensaje}
+          </p>
+          <div className="alerta aviso" style={{ textAlign: 'left' }}>
+            <strong>Fuente:</strong> Guías Alimentarias para la Población Infantil —
+            Ministerio de Salud y Ambiente de la Nación Argentina (2006).
+          </div>
+        </div>
+        <button className="btn-secundario" style={{ width: '100%' }} onClick={onNuevoCalculo}>
+          ← Nuevo cálculo
+        </button>
+      </div>
+    )
+  }
+
   return (
     <div>
       {/* Encabezado del resultado */}
@@ -49,6 +73,13 @@ export default function Resultados({ resultado, onVerDetalle, onNuevoCalculo }) 
           <button className="btn-texto" onClick={onNuevoCalculo}>← Nuevo cálculo</button>
         </div>
       </div>
+
+      {/* Aviso etario si corresponde */}
+      {resultado.mensaje && resultado.mensaje !== 'Plan calculado correctamente' && (
+        <div className="alerta aviso" style={{ marginBottom: 12 }}>
+          📋 {resultado.mensaje}
+        </div>
+      )}
 
       {/* Banner de costos */}
       <div className="costo-banner">
