@@ -53,6 +53,93 @@ function medidaCasera(nombre, gramos) {
   return null
 }
 
+
+// ─── Envases comerciales típicos en supermercados argentinos ─────────────────
+// Tamaños en gramos (o ml para líquidos). null = se vende a granel.
+const ENVASES_POR_KEYWORD = {
+  'mayonesa':    [125, 250, 500, 1000],
+  'aceite':      [500, 900, 1000, 1500],
+  'manteca':     [200, 400],
+  'margarina':   [200, 500],
+  'arroz':       [500, 1000, 2000],
+  'fideos':      [250, 500, 1000],
+  'macarron':    [250, 500, 1000],
+  'harina':      [500, 1000],
+  'polenta':     [500, 1000],
+  'avena':       [500, 1000],
+  'maicena':     [250, 500],
+  'azucar':      [1000, 2000],
+  'sal ':        [500, 1000],
+  'leche':       [1000, 2000],
+  'yogur':       [190, 500, 1000],
+  'queso':       [200, 400, 500],
+  'ricota':      [200, 500],
+  'crema':       [200, 500],
+  'huevo':       [600, 900],   // docena (600g) o 18 (900g)
+  'atun':        [170, 340],
+  'sardina':     [100, 125],
+  'caballa':     [170, 350],
+  'lenteja':     [500, 1000],
+  'garbanzo':    [500, 1000],
+  'poroto':      [500, 1000],
+  'arveja':      [400, 500],
+  'soja':        [500, 1000],
+  'almendra':    [100, 200, 500],
+  'mani':        [100, 200, 500],
+  'nuez':        [100, 200],
+  'galletita':   [100, 200, 300],
+  'pan ':        [300, 500, 700],
+  'mermelada':   [300, 454],
+  'dulce':       [400, 800],
+  'chocolate':   [100, 200],
+  'miel':        [500, 1000],
+}
+
+const ENVASES_POR_GRUPO = {
+  'Cereales':    500,
+  'Leguminosas': 500,
+  'Lacteos':     1000,
+  'Huevos':      600,
+  'Aceites':     500,
+  'Azucares':    1000,
+  'Pescados':    170,
+  'Embutidos':   200,
+  'FrutosSecos': 200,
+  // A granel — sin envase fijo
+  'Hortalizas':  null,
+  'Frutas':      null,
+  'Carnes':      null,
+  'Aves':        null,
+}
+
+function calcularEnvase(nombre, grupo, gramosNecesarios) {
+  const n = nombre.toLowerCase()
+
+  // Buscar por keyword
+  for (const [kw, sizes] of Object.entries(ENVASES_POR_KEYWORD)) {
+    if (n.includes(kw)) {
+      const tamMin = sizes[0]
+      const unidades = Math.ceil(gramosNecesarios / tamMin)
+      const tamTotal = tamMin * unidades
+      return { tamEnvase: tamMin, unidades, tamTotal }
+    }
+  }
+
+  // Fallback por grupo
+  const tamGrupo = ENVASES_POR_GRUPO[grupo]
+  if (!tamGrupo) return null  // a granel
+
+  const unidades = Math.ceil(gramosNecesarios / tamGrupo)
+  const tamTotal = tamGrupo * unidades
+  return { tamEnvase: tamGrupo, unidades, tamTotal }
+}
+
+function labelEnvase(envase, gramosNecesarios) {
+  if (!envase) return 'a granel'
+  if (envase.unidades === 1) return `1 × ${formatPeso(envase.tamEnvase)}`
+  return `${envase.unidades} × ${formatPeso(envase.tamEnvase)}`
+}
+
 export default function ListaImprimible({ resultado, onCerrar }) {
   const hoy = new Date().toLocaleDateString('es-AR', {
     weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
@@ -150,14 +237,27 @@ export default function ListaImprimible({ resultado, onCerrar }) {
                         <td style={{ padding: '6px 8px', color: '#9ca3af', fontSize: '.78rem', whiteSpace: 'nowrap' }}>
                           {medida || ''}
                         </td>
-                        {/* Cantidad */}
+                        {/* Cantidad necesaria */}
                         <td style={{ padding: '6px 4px', textAlign: 'right', fontWeight: 600, whiteSpace: 'nowrap' }}>
                           {formatPeso(item.gramos)}
                         </td>
-                        {/* Costo */}
-                        <td style={{ padding: '6px 4px 6px 12px', textAlign: 'right', color: '#16a34a', fontWeight: 700, whiteSpace: 'nowrap' }}>
-                          {formatARS(item.costo_ars)}
-                        </td>
+                        {/* Envase comercial */}
+                        {(() => {
+                          const envase = calcularEnvase(item.nombre, item.grupo, item.gramos)
+                          const precioEnvase = envase && item.costo_ars > 0
+                            ? item.costo_ars / item.gramos * (envase.tamEnvase * envase.unidades)
+                            : null
+                          return (
+                            <>
+                              <td style={{ padding: '6px 4px', textAlign: 'right', fontSize: '.78rem', color: '#6b7280', whiteSpace: 'nowrap' }}>
+                                {labelEnvase(envase, item.gramos)}
+                              </td>
+                              <td style={{ padding: '6px 4px 6px 8px', textAlign: 'right', color: '#16a34a', fontWeight: 700, whiteSpace: 'nowrap' }}>
+                                {precioEnvase ? formatARS(precioEnvase) : formatARS(item.costo_ars)}
+                              </td>
+                            </>
+                          )
+                        })()}
                       </tr>
                     )
                   })}

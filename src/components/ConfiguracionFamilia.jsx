@@ -240,6 +240,9 @@ export default function ConfiguracionFamilia({ onCalcular, cargando, error }) {
         <div className="card-titulo">📍 Ubicación</div>
         <div className="form-grupo">
           <label className="form-label">Provincia</label>
+          <div style={{ fontSize: '.75rem', color: 'var(--gris-suave)', marginBottom: 4 }}>
+            Los precios son nacionales para todas las provincias (datos SEPA)
+          </div>
           <select
             className="form-select"
             value={provincia ?? ''}
