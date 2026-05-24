@@ -2,30 +2,58 @@ import { useState } from 'react'
 import Configuracion from './components/Configuracion.jsx'
 import Resultados from './components/Resultados.jsx'
 import DetalleNutricional from './components/DetalleNutricional.jsx'
+import ConfiguracionFamilia from './components/ConfiguracionFamilia.jsx'
+import ResultadosFamilia from './components/ResultadosFamilia.jsx'
 
-// URL de la API — se configura en .env como VITE_API_URL
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
 export default function App() {
-  // 'form' | 'resultados' | 'detalle'
-  const [vista, setVista] = useState('form')
+  const [modo, setModo]           = useState('individual')  // 'individual' | 'familia'
+  const [vista, setVista]         = useState('form')        // 'form' | 'resultados' | 'detalle'
   const [resultado, setResultado] = useState(null)
-  const [cargando, setCargando] = useState(false)
-  const [error, setError] = useState(null)
+  const [cargando, setCargando]   = useState(false)
+  const [error, setError]         = useState(null)
 
-  async function calcular(params) {
-    setCargando(true)
+  function resetear() {
+    setVista('form')
+    setResultado(null)
     setError(null)
+  }
+
+  function cambiarModo(nuevoModo) {
+    setModo(nuevoModo)
+    resetear()
+  }
+
+  async function calcularIndividual(params) {
+    setCargando(true); setError(null)
     try {
       const resp = await fetch(`${API_URL}/api/plan`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(params),
       })
-      if (!resp.ok) {
-        const err = await resp.json()
-        throw new Error(err.detail || 'Error en el servidor')
-      }
+      if (!resp.ok) throw new Error((await resp.json()).detail || 'Error en el servidor')
+      const data = await resp.json()
+      if (!data.exito) throw new Error(data.mensaje)
+      setResultado(data)
+      setVista('resultados')
+    } catch (e) {
+      setError(e.message)
+    } finally {
+      setCargando(false)
+    }
+  }
+
+  async function calcularFamilia(params) {
+    setCargando(true); setError(null)
+    try {
+      const resp = await fetch(`${API_URL}/api/plan/familia`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(params),
+      })
+      if (!resp.ok) throw new Error((await resp.json()).detail || 'Error en el servidor')
       const data = await resp.json()
       if (!data.exito) throw new Error(data.mensaje)
       setResultado(data)
@@ -44,27 +72,60 @@ export default function App() {
         <p>Dieta nutritiva y económica · Requerimientos OMS · Argentina</p>
       </header>
 
+      {/* Selector de modo */}
       {vista === 'form' && (
-        <Configuracion
-          onCalcular={calcular}
-          cargando={cargando}
-          error={error}
-          apiUrl={API_URL}
-        />
+        <div className="tabs" style={{ marginBottom: 16 }}>
+          <button
+            type="button"
+            className={`tab${modo === 'individual' ? ' activo' : ''}`}
+            onClick={() => cambiarModo('individual')}
+          >
+            👤 Individual
+          </button>
+          <button
+            type="button"
+            className={`tab${modo === 'familia' ? ' activo' : ''}`}
+            onClick={() => cambiarModo('familia')}
+          >
+            👨‍👩‍👧‍👦 Modo Familia
+          </button>
+        </div>
       )}
 
-      {vista === 'resultados' && resultado && (
+      {/* Vistas individuales */}
+      {modo === 'individual' && vista === 'form' && (
+        <Configuracion
+          onCalcular={calcularIndividual}
+          cargando={cargando}
+          error={error}
+        />
+      )}
+      {modo === 'individual' && vista === 'resultados' && resultado && (
         <Resultados
           resultado={resultado}
           onVerDetalle={() => setVista('detalle')}
-          onNuevoCalculo={() => { setVista('form'); setResultado(null) }}
+          onNuevoCalculo={resetear}
         />
       )}
-
-      {vista === 'detalle' && resultado && (
+      {modo === 'individual' && vista === 'detalle' && resultado && (
         <DetalleNutricional
           resultado={resultado}
           onVolver={() => setVista('resultados')}
+        />
+      )}
+
+      {/* Vistas familia */}
+      {modo === 'familia' && vista === 'form' && (
+        <ConfiguracionFamilia
+          onCalcular={calcularFamilia}
+          cargando={cargando}
+          error={error}
+        />
+      )}
+      {modo === 'familia' && vista === 'resultados' && resultado && (
+        <ResultadosFamilia
+          resultado={resultado}
+          onNuevoCalculo={resetear}
         />
       )}
 
