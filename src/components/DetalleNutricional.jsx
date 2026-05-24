@@ -191,8 +191,8 @@ export default function DetalleNutricional({ resultado, onVolver }) {
           </thead>
           <tbody>
             {NUTRIENTES.map(n => {
-              const aporte = aportes[n.key]
-              const minimo = req_oms[n.reqKey]
+              const aporte = aportes[n.key] ?? 0
+              const minimo = req_oms[n.reqKey] ?? 0
               const maximo = n.maxKey ? req_oms[n.maxKey] : null
               const pct    = minimo > 0 ? (aporte / minimo * 100) : 100
               const estado = claseEstado(pct)
