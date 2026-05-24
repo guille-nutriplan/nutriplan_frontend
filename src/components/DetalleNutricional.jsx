@@ -26,20 +26,18 @@ function formatNum(n, decimales = 0) {
 
 function claseEstado(pct) {
   if (pct < 90)  return 'bajo'
-  if (pct > 200) return 'exceso'
+  if (pct > 150) return 'exceso'
   return 'ok'
 }
 
 function etiquetaEstado(pct) {
   if (pct < 90)  return '⚠ Bajo'
-  if (pct > 200) return 'ⓘ Excede'
+  if (pct > 150) return 'ℹ Excede'
   return '✓ OK'
 }
 
 function BarraNutriente({ nutriente, aporte, req, maxReq }) {
-  const pct = maxReq ? (aporte / maxReq) * 100
-            : req > 0 ? (aporte / req) * 100
-            : 100
+  const pct = req > 0 ? (aporte / req) * 100 : 100
   const estado = claseEstado(pct)
   const anchoVisual = Math.min(pct, 150)
   const anchoMax = 150
@@ -64,9 +62,8 @@ function BarraNutriente({ nutriente, aporte, req, maxReq }) {
       <div className="nutriente-detalle">
         Aporte: {formatNum(aporte, nutriente.unit === 'mg' || nutriente.unit === 'g' ? 1 : 0)} {nutriente.unit}
         {' · '}
-        {maxReq
-          ? `Rango OMS: ${formatNum(req, 0)}–${formatNum(maxReq, 0)} ${nutriente.unit}`
-          : `Mínimo OMS: ${formatNum(req, 0)} ${nutriente.unit}`}
+        Mínimo OMS: {formatNum(req, 0)} {nutriente.unit}
+        {maxReq ? ` · Máximo: ${formatNum(maxReq, 0)} ${nutriente.unit}` : ''}
       </div>
     </div>
   )
@@ -197,10 +194,8 @@ export default function DetalleNutricional({ resultado, onVolver }) {
               const aporte = aportes[n.key]
               const minimo = req_oms[n.reqKey]
               const maximo = n.maxKey ? req_oms[n.maxKey] : null
-              const pct    = maximo
-                ? Math.round(aporte / maximo * 100)
-                : (minimo > 0 ? Math.round(aporte / minimo * 100) : 100)
-              const estado = (maximo && aporte > maximo * 1.05) ? 'exceso' : claseEstado(pct)
+              const pct    = minimo > 0 ? (aporte / minimo * 100) : 100
+              const estado = claseEstado(pct)
               return (
                 <tr key={n.key} style={{ borderBottom: '1px solid var(--gris-fondo)' }}>
                   <td style={{ padding: '7px 4px', fontWeight: 600 }}>{n.label}</td>
