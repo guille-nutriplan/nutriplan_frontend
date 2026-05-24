@@ -26,13 +26,13 @@ function formatNum(n, decimales = 0) {
 
 function claseEstado(pct) {
   if (pct < 90)  return 'bajo'
-  if (pct > 150) return 'exceso'
+  if (pct > 200) return 'exceso'
   return 'ok'
 }
 
 function etiquetaEstado(pct) {
   if (pct < 90)  return '⚠ Bajo'
-  if (pct > 150) return 'ℹ Excede'
+  if (pct > 200) return 'ⓘ Excede'
   return '✓ OK'
 }
 
@@ -194,8 +194,11 @@ export default function DetalleNutricional({ resultado, onVolver }) {
               const aporte = aportes[n.key]
               const minimo = req_oms[n.reqKey]
               const maximo = n.maxKey ? req_oms[n.maxKey] : null
-              const pct    = minimo > 0 ? (aporte / minimo * 100) : 100
-              const estado = claseEstado(pct)
+               const maximo = n.maxKey ? req_oms[n.maxKey] : null
+              const pct    = maximo
+                ? Math.round(aporte / maximo * 100)
+                : (minimo > 0 ? Math.round(aporte / minimo * 100) : 100)
+              const estado = (maximo && aporte > maximo * 1.05) ? 'exceso' : claseEstado(pct)
               return (
                 <tr key={n.key} style={{ borderBottom: '1px solid var(--gris-fondo)' }}>
                   <td style={{ padding: '7px 4px', fontWeight: 600 }}>{n.label}</td>
