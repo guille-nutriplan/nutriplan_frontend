@@ -137,7 +137,12 @@ export default function App() {
           borderRadius: 8, padding: '6px 14px', marginBottom: 12,
           fontSize: '.78rem', color: '#15803d',
         }}>
-          ✅ Precios actualizados desde SEPA datos.gob.ar
+          ✅ Precios SEPA datos.gob.ar
+          {sepaStatus.sepa_mensaje && (
+            <span style={{ marginLeft: 6, color: '#166534' }}>
+              · {sepaStatus.sepa_mensaje.replace('Precios SEPA: ', '')}
+            </span>
+          )}
         </div>
       )}
 
