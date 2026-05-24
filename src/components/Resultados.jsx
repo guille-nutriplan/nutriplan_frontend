@@ -154,6 +154,19 @@ export default function Resultados({ resultado, onVerDetalle, onNuevoCalculo }) 
         </p>
       </div>
 
+      {/* Nota sobre cocción */}
+      <div style={{
+        background: '#fffbeb', border: '1px solid #fde68a',
+        borderRadius: 8, padding: '10px 14px', marginBottom: 8,
+        fontSize: '.78rem', color: '#92400e', lineHeight: 1.5,
+      }}>
+        🍳 <strong>Sobre los valores nutricionales:</strong> los datos corresponden a alimentos 
+        en estado crudo o natural, que es la base estándar de las tablas de composición. 
+        La cocción puede reducir algunas vitaminas (Vit C: 20-50%, B1/B2: 10-40%) 
+        y minerales si se descarta el agua de cocción. 
+        Se recomienda preferir vapor o plancha para conservar más nutrientes.
+      </div>
+
       {/* CTA detalle */}
       <button className="btn-primary" onClick={onVerDetalle} style={{ marginBottom: 8 }}>
         📊 Ver detalle nutricional completo
