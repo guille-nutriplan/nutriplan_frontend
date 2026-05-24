@@ -37,7 +37,9 @@ function etiquetaEstado(pct) {
 }
 
 function BarraNutriente({ nutriente, aporte, req, maxReq }) {
-  const pct = req > 0 ? (aporte / req) * 100 : 100
+  const pct = maxReq ? (aporte / maxReq) * 100
+            : req > 0 ? (aporte / req) * 100
+            : 100
   const estado = claseEstado(pct)
   const anchoVisual = Math.min(pct, 150)
   const anchoMax = 150
@@ -62,8 +64,9 @@ function BarraNutriente({ nutriente, aporte, req, maxReq }) {
       <div className="nutriente-detalle">
         Aporte: {formatNum(aporte, nutriente.unit === 'mg' || nutriente.unit === 'g' ? 1 : 0)} {nutriente.unit}
         {' · '}
-        Mínimo OMS: {formatNum(req, 0)} {nutriente.unit}
-        {maxReq ? ` · Máximo: ${formatNum(maxReq, 0)} ${nutriente.unit}` : ''}
+        {maxReq
+          ? `Rango OMS: ${formatNum(req, 0)}–${formatNum(maxReq, 0)} ${nutriente.unit}`
+          : `Mínimo OMS: ${formatNum(req, 0)} ${nutriente.unit}`}
       </div>
     </div>
   )
