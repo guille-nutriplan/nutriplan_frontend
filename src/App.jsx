@@ -6,12 +6,14 @@ import ConfiguracionFamilia from './components/ConfiguracionFamilia.jsx'
 import Analizador from './components/Analizador.jsx'
 import ResultadosAnalisis from './components/ResultadosAnalisis.jsx'
 import ResultadosFamilia from './components/ResultadosFamilia.jsx'
+import { useRegisterSW } from 'virtual:pwa-register/react'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
 export default function App() {
   const [modo, setModo]           = useState('individual')
   const [sepaStatus, setSepaStatus] = useState(null)
+  const { needRefresh: [needRefresh], updateServiceWorker } = useRegisterSW()
 
   // Consultar estado SEPA al montar
   useEffect(() => {
@@ -232,6 +234,21 @@ export default function App() {
         Precios: <a href="https://datos.produccion.gob.ar" target="_blank" rel="noreferrer">SEPA datos.gob.ar</a>
         <br />
         Esta herramienta es orientativa. Consultá a un profesional de la salud.
+        {needRefresh && (
+  <div style={{
+    position: 'fixed', bottom: 16, left: '50%', transform: 'translateX(-50%)',
+    background: '#16a34a', color: 'white', borderRadius: 10,
+    padding: '12px 20px', display: 'flex', gap: 12, alignItems: 'center',
+    boxShadow: '0 4px 12px rgba(0,0,0,.2)', zIndex: 9999,
+  }}>
+    <span>🔄 Nueva versión disponible</span>
+    <button onClick={() => updateServiceWorker(true)}
+      style={{ background: 'white', color: '#16a34a', border: 'none',
+        borderRadius: 6, padding: '6px 14px', fontWeight: 700, cursor: 'pointer' }}>
+      Actualizar
+    </button>
+  </div>
+)}
       </footer>
     </div>
   )
