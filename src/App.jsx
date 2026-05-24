@@ -3,12 +3,14 @@ import Configuracion from './components/Configuracion.jsx'
 import Resultados from './components/Resultados.jsx'
 import DetalleNutricional from './components/DetalleNutricional.jsx'
 import ConfiguracionFamilia from './components/ConfiguracionFamilia.jsx'
+import Analizador from './components/Analizador.jsx'
+import ResultadosAnalisis from './components/ResultadosAnalisis.jsx'
 import ResultadosFamilia from './components/ResultadosFamilia.jsx'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
 export default function App() {
-  const [modo, setModo]           = useState('individual')  // 'individual' | 'familia'
+  const [modo, setModo]           = useState('individual')  // 'individual' | 'familia' | 'analizador'
   const [vista, setVista]         = useState('form')        // 'form' | 'resultados' | 'detalle'
   const [resultado, setResultado] = useState(null)
   const [cargando, setCargando]   = useState(false)
@@ -36,6 +38,25 @@ export default function App() {
       if (!resp.ok) throw new Error((await resp.json()).detail || 'Error en el servidor')
       const data = await resp.json()
       if (!data.exito) throw new Error(data.mensaje)
+      setResultado(data)
+      setVista('resultados')
+    } catch (e) {
+      setError(e.message)
+    } finally {
+      setCargando(false)
+    }
+  }
+
+  async function calcularAnalisis(params) {
+    setCargando(true); setError(null)
+    try {
+      const resp = await fetch(`${API_URL}/api/analizar`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(params),
+      })
+      if (!resp.ok) throw new Error((await resp.json()).detail || 'Error en el servidor')
+      const data = await resp.json()
       setResultado(data)
       setVista('resultados')
     } catch (e) {
@@ -89,6 +110,13 @@ export default function App() {
           >
             👨‍👩‍👧‍👦 Modo Familia
           </button>
+          <button
+            type="button"
+            className={`tab${modo === 'analizador' ? ' activo' : ''}`}
+            onClick={() => cambiarModo('analizador')}
+          >
+            🔬 Analizar dieta
+          </button>
         </div>
       )}
 
@@ -126,6 +154,23 @@ export default function App() {
         <ResultadosFamilia
           resultado={resultado}
           onNuevoCalculo={resetear}
+        />
+      )}
+
+      {/* Vistas analizador */}
+      {modo === 'analizador' && vista === 'form' && (
+        <Analizador
+          onAnalizar={calcularAnalisis}
+          cargando={cargando}
+          error={error}
+          apiUrl={API_URL}
+        />
+      )}
+      {modo === 'analizador' && vista === 'resultados' && resultado && (
+        <ResultadosAnalisis
+          resultado={resultado}
+          onNuevoAnalisis={resetear}
+          onNuevoPlan={() => cambiarModo('individual')}
         />
       )}
 
