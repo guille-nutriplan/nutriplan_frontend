@@ -3,7 +3,7 @@ import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recha
 // Definición de nutrientes con sus unidades y rangos
 const NUTRIENTES = [
   { key: 'energia_kcal', label: 'Energía',       unit: 'kcal', reqKey: 'energia_min', maxKey: 'energia_max' },
-   { key: 'proteinas_g',  label: 'Proteínas',     unit: 'g',    reqKey: 'proteinas_min' },
+  { key: 'proteinas_g', label: 'Proteínas', unit: 'g', reqKey: 'proteinas_min' },
   { key: 'grasas_g',     label: 'Grasas',        unit: 'g',    reqKey: 'grasas_min',  maxKey: 'grasas_max' },
   { key: 'hc_g',         label: 'Carbohidratos', unit: 'g',    reqKey: 'hc_min' },
   { key: 'fibra_g',      label: 'Fibra',         unit: 'g',    reqKey: 'fibra_min',   estimada: true },
