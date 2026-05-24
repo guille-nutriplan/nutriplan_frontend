@@ -194,7 +194,6 @@ export default function DetalleNutricional({ resultado, onVolver }) {
               const aporte = aportes[n.key]
               const minimo = req_oms[n.reqKey]
               const maximo = n.maxKey ? req_oms[n.maxKey] : null
-               const maximo = n.maxKey ? req_oms[n.maxKey] : null
               const pct    = maximo
                 ? Math.round(aporte / maximo * 100)
                 : (minimo > 0 ? Math.round(aporte / minimo * 100) : 100)
