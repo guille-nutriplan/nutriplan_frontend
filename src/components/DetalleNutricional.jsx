@@ -1,56 +1,73 @@
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 
-// Definición de nutrientes con sus unidades y rangos
+// Fuente máximos: IOM Dietary Reference Intakes (UL = Tolerable Upper Intake Level)
 const NUTRIENTES = [
-  { key: 'energia_kcal', label: 'Energía',       unit: 'kcal', reqKey: 'energia_min', maxKey: 'energia_max' },
-  { key: 'proteinas_g', label: 'Proteínas', unit: 'g', reqKey: 'proteinas_min' },
-  { key: 'grasas_g',     label: 'Grasas',        unit: 'g',    reqKey: 'grasas_min',  maxKey: 'grasas_max' },
-  { key: 'hc_g',         label: 'Carbohidratos', unit: 'g',    reqKey: 'hc_min' },
-  { key: 'fibra_g',      label: 'Fibra',         unit: 'g',    reqKey: 'fibra_min',   estimada: true },
-  { key: 'calcio_mg',    label: 'Calcio',        unit: 'mg',   reqKey: 'calc_min' },
-  { key: 'hierro_mg',    label: 'Hierro',        unit: 'mg',   reqKey: 'hierro_min' },
-  { key: 'vit_a_ui',     label: 'Vitamina A',    unit: 'UI',   reqKey: 'vit_a_min_ui' },
-  { key: 'vit_c_mg',     label: 'Vitamina C',    unit: 'mg',   reqKey: 'vit_c_min' },
+  { key: 'energia_kcal', label: 'Energía',       unit: 'kcal', reqKey: 'energia_min',  maxKey: 'energia_max' },
+  { key: 'proteinas_g',  label: 'Proteínas',     unit: 'g',    reqKey: 'proteinas_min' },
+  { key: 'grasas_g',     label: 'Grasas',        unit: 'g',    reqKey: 'grasas_min',   maxKey: 'grasas_max' },
+  { key: 'hc_g',         label: 'Carbohidratos', unit: 'g',    reqKey: 'hc_min',       maxKey: 'hc_max' },
+  { key: 'fibra_g',      label: 'Fibra',         unit: 'g',    reqKey: 'fibra_min',    estimada: true },
+  { key: 'calcio_mg',    label: 'Calcio',        unit: 'mg',   reqKey: 'calc_min',     maxKey: 'calc_max' },
+  { key: 'hierro_mg',    label: 'Hierro',        unit: 'mg',   reqKey: 'hierro_min',   maxKey: 'hierro_max' },
+  { key: 'vit_a_ui',     label: 'Vitamina A',    unit: 'UI',   reqKey: 'vit_a_min_ui', maxKey: 'vit_a_max_ui' },
+  { key: 'vit_c_mg',     label: 'Vitamina C',    unit: 'mg',   reqKey: 'vit_c_min',    maxKey: 'vit_c_max' },
   { key: 'vit_b1_mg',    label: 'Vitamina B1',   unit: 'mg',   reqKey: 'vit_b1_min' },
   { key: 'vit_b2_mg',    label: 'Vitamina B2',   unit: 'mg',   reqKey: 'vit_b2_min' },
-  { key: 'zinc_mg',      label: 'Zinc',          unit: 'mg',   reqKey: 'zinc_min',    estimada: true },
-  { key: 'yodo_ug',      label: 'Yodo',          unit: 'µg',   reqKey: 'yodo_min',    estimada: true },
-  { key: 'selenio_ug',   label: 'Selenio',       unit: 'µg',   reqKey: 'selenio_min', estimada: true },
+  { key: 'zinc_mg',      label: 'Zinc',          unit: 'mg',   reqKey: 'zinc_min',     maxKey: 'zinc_max',    estimada: true },
+  { key: 'yodo_ug',      label: 'Yodo',          unit: 'µg',   reqKey: 'yodo_min',     maxKey: 'yodo_max',    estimada: true },
+  { key: 'selenio_ug',   label: 'Selenio',       unit: 'µg',   reqKey: 'selenio_min',  maxKey: 'selenio_max', estimada: true },
 ]
 
 const COLORES_PIE = ['#16a34a', '#3b82f6', '#f59e0b', '#ef4444']
 
 function formatNum(n, decimales = 0) {
-  return n.toFixed(decimales).replace('.', ',')
+  if (n === undefined || n === null || isNaN(n)) return '—'
+  return Number(n).toFixed(decimales).replace('.', ',')
 }
 
-function claseEstado(pct) {
-  if (pct < 90)  return 'bajo'
-  if (pct > 150) return 'exceso'
+function claseEstado(pct, sinExceso) {
+  if (pct < 90)               return 'bajo'
+  if (!sinExceso && pct > 200) return 'exceso'
   return 'ok'
 }
 
-function etiquetaEstado(pct) {
-  if (pct < 90)  return '⚠ Bajo'
-  if (pct > 150) return 'ℹ Excede'
+function etiquetaEstado(pct, sinExceso) {
+  if (pct < 90)               return '⚠ Bajo'
+  if (!sinExceso && pct > 200) return 'ℹ Excede'
   return '✓ OK'
 }
 
 function BarraNutriente({ nutriente, aporte, req, maxReq }) {
-  const pct = req > 0 ? (aporte / req) * 100 : 100
-  const estado = claseEstado(pct)
+  const a = aporte ?? 0
+  const r = req    ?? 0
+
+  // Para nutrientes con rango (min-max) calcular % sobre el máximo
+  const pct = maxReq
+    ? Math.round(a / maxReq * 100)
+    : (r > 0 ? Math.round(a / r * 100) : 100)
+
+  const sinExceso = !nutriente.maxKey  // sin UL → no marcar como exceso
+  const estado    = claseEstado(pct, sinExceso)
   const anchoVisual = Math.min(pct, 150)
-  const anchoMax = 150
+  const anchoMax    = 150
+
+  const detalleLabel = maxReq
+    ? `Rango OMS: ${formatNum(r, 0)}–${formatNum(maxReq, 0)} ${nutriente.unit}`
+    : `Mínimo OMS: ${formatNum(r, 0)} ${nutriente.unit}`
 
   return (
     <div className="nutriente-row">
       <div className="nutriente-header">
         <span className="nutriente-nombre">
           {nutriente.label}
-          {nutriente.estimada && <span style={{ fontSize: '.72rem', color: 'var(--gris-suave)', marginLeft: 4 }}>*estimada</span>}
+          {nutriente.estimada && (
+            <span style={{ fontSize: '.72rem', color: 'var(--gris-suave)', marginLeft: 4 }}>
+              *estimada
+            </span>
+          )}
         </span>
         <span className={`nutriente-pct ${estado}`}>
-          {etiquetaEstado(pct)} · {Math.round(pct)}%
+          {etiquetaEstado(pct, sinExceso)} · {Math.round(pct)}%
         </span>
       </div>
       <div className="barra-fondo">
@@ -60,10 +77,9 @@ function BarraNutriente({ nutriente, aporte, req, maxReq }) {
         />
       </div>
       <div className="nutriente-detalle">
-        Aporte: {formatNum(aporte, nutriente.unit === 'mg' || nutriente.unit === 'g' ? 1 : 0)} {nutriente.unit}
+        Aporte: {formatNum(a, nutriente.unit === 'mg' || nutriente.unit === 'g' ? 1 : 0)} {nutriente.unit}
         {' · '}
-        Mínimo OMS: {formatNum(req, 0)} {nutriente.unit}
-        {maxReq ? ` · Máximo: ${formatNum(maxReq, 0)} ${nutriente.unit}` : ''}
+        {detalleLabel}
       </div>
     </div>
   )
@@ -72,7 +88,6 @@ function BarraNutriente({ nutriente, aporte, req, maxReq }) {
 export default function DetalleNutricional({ resultado, onVolver }) {
   const { aportes, req_oms } = resultado
 
-  // Datos para el gráfico de torta (distribución calórica)
   const cal_proteinas = aportes.proteinas_g * 4
   const cal_grasas    = aportes.grasas_g * 9
   const cal_hc        = aportes.hc_g * 4
@@ -83,9 +98,8 @@ export default function DetalleNutricional({ resultado, onVolver }) {
     { name: 'Grasas',        value: Math.round(cal_grasas),    pct: Math.round(cal_grasas / aportes.energia_kcal * 100) },
   ]
 
-  // Agrupar nutrientes: macros primero, luego micronutrientes
-  const macros  = NUTRIENTES.slice(0, 4)
-  const micros  = NUTRIENTES.slice(4)
+  const macros = NUTRIENTES.slice(0, 4)
+  const micros = NUTRIENTES.slice(4)
 
   return (
     <div>
@@ -102,34 +116,20 @@ export default function DetalleNutricional({ resultado, onVolver }) {
         </div>
       </div>
 
-      {/* Distribución calórica — torta */}
+      {/* Distribución calórica */}
       <div className="card">
         <div className="card-titulo">🍕 Distribución calórica</div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
-          <ResponsiveContainer width="100%" height={200}>
-            <PieChart>
-              <Pie
-                data={dataTorta}
-                cx="50%"
-                cy="50%"
-                innerRadius={50}
-                outerRadius={80}
-                paddingAngle={3}
-                dataKey="value"
-              >
-                {dataTorta.map((_, i) => (
-                  <Cell key={i} fill={COLORES_PIE[i]} />
-                ))}
-              </Pie>
-              <Tooltip
-                formatter={(value, name, props) => [
-                  `${value} kcal (${props.payload.pct}%)`, name
-                ]}
-              />
-              <Legend />
-            </PieChart>
-          </ResponsiveContainer>
-        </div>
+        <ResponsiveContainer width="100%" height={200}>
+          <PieChart>
+            <Pie data={dataTorta} cx="50%" cy="50%"
+              innerRadius={50} outerRadius={80} paddingAngle={3} dataKey="value">
+              {dataTorta.map((_, i) => <Cell key={i} fill={COLORES_PIE[i]} />)}
+            </Pie>
+            <Tooltip formatter={(value, name, props) =>
+              [`${value} kcal (${props.payload.pct}%)`, name]} />
+            <Legend />
+          </PieChart>
+        </ResponsiveContainer>
         <div className="macro-grid" style={{ marginTop: 8 }}>
           {dataTorta.map((m, i) => (
             <div key={m.name} className="macro-item" style={{ borderColor: COLORES_PIE[i] + '44' }}>
@@ -148,12 +148,10 @@ export default function DetalleNutricional({ resultado, onVolver }) {
       <div className="card">
         <div className="card-titulo">⚡ Macronutrientes vs OMS</div>
         {macros.map(n => (
-          <BarraNutriente
-            key={n.key}
-            nutriente={n}
+          <BarraNutriente key={n.key} nutriente={n}
             aporte={aportes[n.key] ?? 0}
             req={req_oms[n.reqKey] ?? 0}
-            maxReq={n.maxKey ? req_oms[n.maxKey] : null}
+            maxReq={n.maxKey ? (req_oms[n.maxKey] ?? null) : null}
           />
         ))}
       </div>
@@ -162,43 +160,44 @@ export default function DetalleNutricional({ resultado, onVolver }) {
       <div className="card">
         <div className="card-titulo">🔬 Micronutrientes vs OMS</div>
         {micros.map(n => (
-          <BarraNutriente
-            key={n.key}
-            nutriente={n}
+          <BarraNutriente key={n.key} nutriente={n}
             aporte={aportes[n.key] ?? 0}
             req={req_oms[n.reqKey] ?? 0}
-            maxReq={n.maxKey ? req_oms[n.maxKey] : null}
+            maxReq={n.maxKey ? (req_oms[n.maxKey] ?? null) : null}
           />
         ))}
-
         <div className="alerta aviso" style={{ marginTop: 16 }}>
           * Los valores de fibra, zinc, yodo y selenio son estimaciones por grupo alimentario.
-          Para mayor precisión, en una próxima versión se integrarán datos de USDA FoodData Central.
         </div>
       </div>
 
-      {/* Referencia OMS */}
+      {/* Tabla referencia OMS */}
       <div className="card">
         <div className="card-titulo">📋 Referencia OMS — {resultado.rango_label}</div>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '.85rem' }}>
           <thead>
             <tr style={{ borderBottom: '2px solid var(--gris-borde)' }}>
-              <th style={{ textAlign: 'left', padding: '6px 4px', color: 'var(--gris-suave)' }}>Nutriente</th>
+              <th style={{ textAlign: 'left',  padding: '6px 4px', color: 'var(--gris-suave)' }}>Nutriente</th>
               <th style={{ textAlign: 'right', padding: '6px 4px', color: 'var(--gris-suave)' }}>Mínimo</th>
-              <th style={{ textAlign: 'right', padding: '6px 4px', color: 'var(--gris-suave)' }}>Máximo</th>
+              <th style={{ textAlign: 'right', padding: '6px 4px', color: 'var(--gris-suave)' }}>Máximo (UL)</th>
               <th style={{ textAlign: 'right', padding: '6px 4px', color: 'var(--gris-suave)' }}>Aporte</th>
             </tr>
           </thead>
           <tbody>
             {NUTRIENTES.map(n => {
-              const aporte = aportes[n.key] ?? 0
+              const aporte = aportes[n.key]   ?? 0
               const minimo = req_oms[n.reqKey] ?? 0
-              const maximo = n.maxKey ? req_oms[n.maxKey] : null
-              const pct    = minimo > 0 ? (aporte / minimo * 100) : 100
-              const estado = claseEstado(pct)
+              const maximo = n.maxKey ? (req_oms[n.maxKey] ?? null) : null
+              const pct    = maximo
+                ? Math.round(aporte / maximo * 100)
+                : (minimo > 0 ? Math.round(aporte / minimo * 100) : 100)
+              const sinExceso = !n.maxKey
+              const estado = claseEstado(pct, sinExceso)
               return (
                 <tr key={n.key} style={{ borderBottom: '1px solid var(--gris-fondo)' }}>
-                  <td style={{ padding: '7px 4px', fontWeight: 600 }}>{n.label}</td>
+                  <td style={{ padding: '7px 4px', fontWeight: 600 }}>
+                    {n.label}{n.estimada ? ' *' : ''}
+                  </td>
                   <td style={{ padding: '7px 4px', textAlign: 'right', color: 'var(--gris-suave)' }}>
                     {formatNum(minimo, 0)} {n.unit}
                   </td>
@@ -207,13 +206,17 @@ export default function DetalleNutricional({ resultado, onVolver }) {
                   </td>
                   <td style={{ padding: '7px 4px', textAlign: 'right', fontWeight: 700 }}
                       className={`nutriente-pct ${estado}`}>
-                    {formatNum(aporte, n.unit === 'mg' ? 1 : 0)} {n.unit}
+                    {formatNum(aporte, n.unit === 'mg' || n.unit === 'g' ? 1 : 0)} {n.unit}
                   </td>
                 </tr>
               )
             })}
           </tbody>
         </table>
+        <p style={{ fontSize: '.72rem', color: 'var(--gris-suave)', marginTop: 8 }}>
+          * Estimado por grupo alimentario · UL = Nivel de Ingesta Máxima Tolerable (IOM/OMS)
+          · B1 y B2 sin UL establecido
+        </p>
       </div>
 
       <button className="btn-primary" onClick={onVolver} style={{ marginBottom: 8 }}>
