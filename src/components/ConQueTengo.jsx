@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import Analizador from './Analizador.jsx'
+import { RadarChart, Radar, PolarGrid, PolarAngleAxis, ResponsiveContainer, Legend } from 'recharts'
 
 const GRUPOS_ICONOS = {
   Cereales:'🌾', Leguminosas:'🫘', Hortalizas:'🥦', Frutas:'🍎',
@@ -58,7 +59,7 @@ export default function ConQueTengo({ apiUrl, onNuevoPlan }) {
     return (
       <div>
         <div className="card" style={{ background: '#eff6ff', border: '1px solid #bfdbfe', marginBottom: 12 }}>
-          <div style={{ fontWeight: 700, marginBottom: 4 }}>🧊 ¿Con lo que tengo?</div>
+          <div style={{ fontWeight: 700, marginBottom: 4 }}>🧊 ¿Con qué tengo?</div>
           <div style={{ fontSize: '.85rem', color: '#1e40af' }}>
             Ingresá los alimentos que ya tenés en casa con sus cantidades.
             La app calculará qué nutrientes ya cubrís y qué necesitás agregar
@@ -122,6 +123,46 @@ export default function ConQueTengo({ apiUrl, onNuevoPlan }) {
           </div>
         )}
       </div>
+
+      {/* Radar antes/después */}
+      {r.agregar.length > 0 && (() => {
+        const req = r.req_oms
+        const ap1 = r.aportes_actuales
+        const ap2 = r.aportes_totales
+        const datos = [
+          { nut: 'Energía',   antes: Math.round(ap1.energia_kcal/req.energia_min*100), despues: Math.round(ap2.energia_kcal/req.energia_min*100) },
+          { nut: 'Proteínas', antes: Math.round(ap1.proteinas_g/req.proteinas_min*100), despues: Math.round(ap2.proteinas_g/req.proteinas_min*100) },
+          { nut: 'Calcio',    antes: Math.round(ap1.calcio_mg/req.calc_min*100), despues: Math.round(ap2.calcio_mg/req.calc_min*100) },
+          { nut: 'Hierro',    antes: Math.round(ap1.hierro_mg/req.hierro_min*100), despues: Math.round(ap2.hierro_mg/req.hierro_min*100) },
+          { nut: 'Vit A',     antes: Math.round(ap1.vit_a_ui/req.vit_a_min_ui*100), despues: Math.round(ap2.vit_a_ui/req.vit_a_min_ui*100) },
+          { nut: 'Vit C',     antes: Math.round(ap1.vit_c_mg/req.vit_c_min*100), despues: Math.round(ap2.vit_c_mg/req.vit_c_min*100) },
+          { nut: 'Fibra',     antes: Math.round(ap1.fibra_g/(req.fibra_min||25)*100), despues: Math.round(ap2.fibra_g/(req.fibra_min||25)*100) },
+          { nut: 'Zinc',      antes: Math.round(ap1.zinc_mg/(req.zinc_min||8)*100), despues: Math.round(ap2.zinc_mg/(req.zinc_min||8)*100) },
+        ].map(d => ({
+          ...d,
+          antes:   Math.min(d.antes, 120),
+          despues: Math.min(d.despues, 120),
+        }))
+        return (
+          <div className="card" style={{ marginBottom: 12 }}>
+            <div className="card-titulo">📈 Cobertura antes y después de agregar</div>
+            <ResponsiveContainer width="100%" height={260}>
+              <RadarChart data={datos}>
+                <PolarGrid />
+                <PolarAngleAxis dataKey="nut" tick={{ fontSize: 11 }} />
+                <Radar name="Con lo que tenés" dataKey="antes"
+                  stroke="#f59e0b" fill="#f59e0b" fillOpacity={0.25} />
+                <Radar name="Dieta completa" dataKey="despues"
+                  stroke="#16a34a" fill="#16a34a" fillOpacity={0.3} />
+                <Legend />
+              </RadarChart>
+            </ResponsiveContainer>
+            <div style={{ fontSize: '.72rem', color: 'var(--gris-suave)', textAlign: 'center' }}>
+              Valores capped en 120% del mínimo OMS
+            </div>
+          </div>
+        )
+      })()}
 
       {/* Lo que ya tenés */}
       <div className="card" style={{ marginBottom: 12 }}>
