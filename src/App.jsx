@@ -176,7 +176,7 @@ export default function App() {
             className={`tab${modo === 'completar' ? ' activo' : ''}`}
             onClick={() => cambiarModo('completar')}
           >
-            🧊 ¿Con qué tengo?
+            🧊 ¿Con lo que tengo?
           </button>
         </div>
       )}

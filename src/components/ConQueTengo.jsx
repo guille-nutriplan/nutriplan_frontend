@@ -58,7 +58,7 @@ export default function ConQueTengo({ apiUrl, onNuevoPlan }) {
     return (
       <div>
         <div className="card" style={{ background: '#eff6ff', border: '1px solid #bfdbfe', marginBottom: 12 }}>
-          <div style={{ fontWeight: 700, marginBottom: 4 }}>🧊 ¿Con qué tengo?</div>
+          <div style={{ fontWeight: 700, marginBottom: 4 }}>🧊 ¿Con lo que tengo?</div>
           <div style={{ fontSize: '.85rem', color: '#1e40af' }}>
             Ingresá los alimentos que ya tenés en casa con sus cantidades.
             La app calculará qué nutrientes ya cubrís y qué necesitás agregar
