@@ -44,9 +44,7 @@ function BarraNutriente({ nutriente, aporte, req, maxReq }) {
   const r = req    ?? 0
 
   // Para nutrientes con rango (min-max) calcular % sobre el máximo
-  const pct = maxReq
-    ? Math.round(a / maxReq * 100)
-    : (r > 0 ? Math.round(a / r * 100) : 100)
+  const pct = r > 0 ? Math.round(a / r * 100) : 100
 
   const sinExceso = !nutriente.maxKey  // sin UL → no marcar como exceso
   const estado = claseEstado(a, r, maxReq, sinExceso)
@@ -190,9 +188,7 @@ export default function DetalleNutricional({ resultado, onVolver }) {
               const aporte = aportes[n.key]   ?? 0
               const minimo = req_oms[n.reqKey] ?? 0
               const maximo = n.maxKey ? (req_oms[n.maxKey] ?? null) : null
-              const pct    = maximo
-                ? Math.round(aporte / maximo * 100)
-                : (minimo > 0 ? Math.round(aporte / minimo * 100) : 100)
+              const pct = minimo > 0 ? Math.round(aporte / minimo * 100) : 100
               const sinExceso = !n.maxKey
               const estado = claseEstado(aporte, minimo, maximo, sinExceso)
               return (
