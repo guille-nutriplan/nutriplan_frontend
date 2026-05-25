@@ -25,15 +25,17 @@ function formatNum(n, decimales = 0) {
   return Number(n).toFixed(decimales).replace('.', ',')
 }
 
-function claseEstado(pct, sinExceso) {
-  if (pct < 90)               return 'bajo'
-  if (!sinExceso && pct > 200) return 'exceso'
+function claseEstado(aporte, minimo, maximo, sinExceso) {
+  if (aporte < minimo * 0.9)                    return 'bajo'
+  if (!sinExceso && maximo && aporte > maximo)  return 'exceso'
+  if (!sinExceso && !maximo && aporte > minimo * 2) return 'exceso'
   return 'ok'
 }
 
-function etiquetaEstado(pct, sinExceso) {
-  if (pct < 90)               return '⚠ Bajo'
-  if (!sinExceso && pct > 200) return 'ℹ Excede'
+function etiquetaEstado(aporte, minimo, maximo, sinExceso) {
+  if (aporte < minimo * 0.9)                    return '⚠ Bajo'
+  if (!sinExceso && maximo && aporte > maximo)  return 'ℹ Excede'
+  if (!sinExceso && !maximo && aporte > minimo * 2) return 'ℹ Excede'
   return '✓ OK'
 }
 
@@ -47,7 +49,7 @@ function BarraNutriente({ nutriente, aporte, req, maxReq }) {
     : (r > 0 ? Math.round(a / r * 100) : 100)
 
   const sinExceso = !nutriente.maxKey  // sin UL → no marcar como exceso
-  const estado    = claseEstado(pct, sinExceso)
+  const estado = claseEstado(a, r, maxReq, sinExceso)
   const anchoVisual = Math.min(pct, 150)
   const anchoMax    = 150
 
@@ -67,7 +69,7 @@ function BarraNutriente({ nutriente, aporte, req, maxReq }) {
           )}
         </span>
         <span className={`nutriente-pct ${estado}`}>
-          {etiquetaEstado(pct, sinExceso)} · {Math.round(pct)}%
+          {etiquetaEstado(a, r, maxReq, sinExceso)} · {Math.round(pct)}%
         </span>
       </div>
       <div className="barra-fondo">
@@ -192,7 +194,7 @@ export default function DetalleNutricional({ resultado, onVolver }) {
                 ? Math.round(aporte / maximo * 100)
                 : (minimo > 0 ? Math.round(aporte / minimo * 100) : 100)
               const sinExceso = !n.maxKey
-              const estado = claseEstado(pct, sinExceso)
+              const estado = claseEstado(aporte, minimo, maximo, sinExceso)
               return (
                 <tr key={n.key} style={{ borderBottom: '1px solid var(--gris-fondo)' }}>
                   <td style={{ padding: '7px 4px', fontWeight: 600 }}>
