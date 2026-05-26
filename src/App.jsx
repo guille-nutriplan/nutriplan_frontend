@@ -5,6 +5,7 @@ import DetalleNutricional from './components/DetalleNutricional.jsx'
 import ConfiguracionFamilia from './components/ConfiguracionFamilia.jsx'
 import Analizador from './components/Analizador.jsx'
 import ConQueTengo from './components/ConQueTengo.jsx'
+import Historial from './components/Historial.jsx'
 import ResultadosAnalisis from './components/ResultadosAnalisis.jsx'
 import ResultadosFamilia from './components/ResultadosFamilia.jsx'
 
@@ -176,7 +177,7 @@ export default function App() {
             className={`tab${modo === 'completar' ? ' activo' : ''}`}
             onClick={() => cambiarModo('completar')}
           >
-            🧊 ¿Con lo que tengo?
+            🧊 ¿Con qué tengo?
           </button>
         </div>
       )}
@@ -242,6 +243,8 @@ export default function App() {
           onNuevoPlan={() => cambiarModo('individual')}
         />
       )}
+
+      {modo === 'historial' && <Historial />}
 
       <footer className="footer">
         NutriPlan v2.0 · Datos nutricionales: tabla de composición de alimentos ·
