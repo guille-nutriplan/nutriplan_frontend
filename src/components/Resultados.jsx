@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import ListaImprimible from './ListaImprimible.jsx'
 
+import { guardarEnHistorial } from './Historial.jsx'
+
 const GRUPOS_ICONOS = {
   Cereales:    '🌾',
   Leguminosas: '🫘',
@@ -29,6 +31,13 @@ function formatARS(n) {
 }
 
 export default function Resultados({ resultado, onVerDetalle, onNuevoCalculo }) {
+  const [guardado, setGuardado] = useState(false)
+
+  function handleGuardar() {
+    guardarEnHistorial(resultado)
+    setGuardado(true)
+    setTimeout(() => setGuardado(false), 3000)
+  }
   const [mostrarLista, setMostrarLista] = useState(false)
   // Agrupar alimentos por grupo
   const grupos = {}
@@ -175,6 +184,12 @@ export default function Resultados({ resultado, onVerDetalle, onNuevoCalculo }) 
       <button className="btn-secundario" style={{ width: '100%', marginTop: 8, marginBottom: 8 }}
         onClick={() => setMostrarLista(true)}>
         🛒 Ver lista de compras imprimible
+      </button>
+      <button className="btn-secundario" style={{ width: '100%', marginBottom: 8,
+        background: guardado ? 'var(--verde-fondo)' : '',
+        color: guardado ? 'var(--verde)' : '' }}
+        onClick={handleGuardar}>
+        {guardado ? '✅ Guardado en historial' : '💾 Guardar en historial'}
       </button>
 
       <div style={{ fontSize: '.78rem', color: 'var(--gris-suave)', textAlign: 'center', marginBottom: 16 }}>
