@@ -179,6 +179,13 @@ export default function App() {
           >
             🧊 ¿Con qué tengo?
           </button>
+          <button
+            type="button"
+            className={`tab${modo === 'historial' ? ' activo' : ''}`}
+            onClick={() => cambiarModo('historial')}
+          >
+            📈 Historial
+          </button>
         </div>
       )}
 
