@@ -25,16 +25,17 @@ function formatNum(n, decimales = 0) {
   return Number(n).toFixed(decimales).replace('.', ',')
 }
 
+// Estado basado en aporte vs mínimo y máximo (UL)
 function claseEstado(aporte, minimo, maximo, sinExceso) {
-  if (aporte < minimo * 0.9)                    return 'bajo'
-  if (!sinExceso && maximo && aporte > maximo)  return 'exceso'
+  if (aporte < minimo * 0.9)                      return 'bajo'
+  if (!sinExceso && maximo && aporte > maximo)    return 'exceso'
   if (!sinExceso && !maximo && aporte > minimo * 2) return 'exceso'
   return 'ok'
 }
 
 function etiquetaEstado(aporte, minimo, maximo, sinExceso) {
-  if (aporte < minimo * 0.9)                    return '⚠ Bajo'
-  if (!sinExceso && maximo && aporte > maximo)  return 'ℹ Excede'
+  if (aporte < minimo * 0.9)                      return '⚠ Bajo'
+  if (!sinExceso && maximo && aporte > maximo)    return 'ℹ Excede'
   if (!sinExceso && !maximo && aporte > minimo * 2) return 'ℹ Excede'
   return '✓ OK'
 }
@@ -43,11 +44,10 @@ function BarraNutriente({ nutriente, aporte, req, maxReq }) {
   const a = aporte ?? 0
   const r = req    ?? 0
 
-  // Para nutrientes con rango (min-max) calcular % sobre el máximo
-  const pct = r > 0 ? Math.round(a / r * 100) : 100
-
-  const sinExceso = !nutriente.maxKey  // sin UL → no marcar como exceso
-  const estado = claseEstado(a, r, maxReq, sinExceso)
+  // Porcentaje siempre contra el mínimo (referencia clínica)
+  const pct       = r > 0 ? Math.round(a / r * 100) : 100
+  const sinExceso = !nutriente.maxKey
+  const estado    = claseEstado(a, r, maxReq, sinExceso)
   const anchoVisual = Math.min(pct, 150)
   const anchoMax    = 150
 
@@ -101,23 +101,48 @@ export default function DetalleNutricional({ resultado, onVolver }) {
   const macros = NUTRIENTES.slice(0, 4)
   const micros = NUTRIENTES.slice(4)
 
+  const hoy = new Date().toLocaleDateString('es-AR', {
+    day: '2-digit', month: '2-digit', year: 'numeric'
+  })
+
   return (
-    <div>
+    <div className="detalle-nutricional-print">
+
+      {/* Estilos de impresión */}
+      <style>{`
+        @media print {
+          body * { visibility: hidden !important; }
+          .detalle-nutricional-print,
+          .detalle-nutricional-print * { visibility: visible !important; }
+          .detalle-nutricional-print { position: fixed; top: 0; left: 0; width: 100%; }
+          .no-print { display: none !important; }
+          @page { margin: 12mm; size: A4; }
+        }
+      `}</style>
+
       {/* Header */}
       <div className="card" style={{ marginBottom: 12 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
           <div>
             <div style={{ fontWeight: 700, fontSize: '1.05rem' }}>Detalle nutricional</div>
             <div style={{ fontSize: '.85rem', color: 'var(--gris-suave)', marginTop: 2 }}>
               {resultado.rango_label} · {resultado.provincia}
             </div>
           </div>
-          <button className="btn-secundario" onClick={onVolver}>← Volver</button>
+          <div className="no-print" style={{ display: 'flex', gap: 8 }}>
+            <button className="btn-secundario" onClick={() => window.print()}>
+              🖨 Imprimir
+            </button>
+            <button className="btn-secundario" onClick={onVolver}>← Volver</button>
+          </div>
+          <div style={{ display: 'none' }} className="print-only">
+            <div style={{ fontSize: '.78rem', color: '#6b7280' }}>NutriPlan · {hoy}</div>
+          </div>
         </div>
       </div>
 
       {/* Distribución calórica */}
-      <div className="card">
+      <div className="card no-print">
         <div className="card-titulo">🍕 Distribución calórica</div>
         <ResponsiveContainer width="100%" height={200}>
           <PieChart>
@@ -185,10 +210,9 @@ export default function DetalleNutricional({ resultado, onVolver }) {
           </thead>
           <tbody>
             {NUTRIENTES.map(n => {
-              const aporte = aportes[n.key]   ?? 0
+              const aporte = aportes[n.key]    ?? 0
               const minimo = req_oms[n.reqKey] ?? 0
               const maximo = n.maxKey ? (req_oms[n.maxKey] ?? null) : null
-              const pct = minimo > 0 ? Math.round(aporte / minimo * 100) : 100
               const sinExceso = !n.maxKey
               const estado = claseEstado(aporte, minimo, maximo, sinExceso)
               return (
@@ -217,9 +241,17 @@ export default function DetalleNutricional({ resultado, onVolver }) {
         </p>
       </div>
 
-      <button className="btn-primary" onClick={onVolver} style={{ marginBottom: 8 }}>
-        ← Ver lista de alimentos
-      </button>
+      {/* Botones */}
+      <div className="no-print">
+        <button className="btn-secundario" style={{ width: '100%', marginBottom: 8 }}
+          onClick={() => window.print()}>
+          🖨 Imprimir análisis nutricional
+        </button>
+        <button className="btn-primary" onClick={onVolver} style={{ marginBottom: 8 }}>
+          ← Ver lista de alimentos
+        </button>
+      </div>
+
     </div>
   )
 }
