@@ -112,7 +112,18 @@ export default function App() {
     <div className="app">
       <header className="header">
         <h1>🥗 NutriPlan</h1>
-        <p>Dieta nutritiva y económica · Requerimientos OMS · Argentina</p>
+        <p style={{ margin: '2px 0 6px 0', fontSize: '.88rem', opacity: .9 }}>
+          Planificá una alimentación completa al menor costo posible,
+          cumpliendo los requerimientos nutricionales de la OMS.
+        </p>
+        <div style={{
+          display: 'inline-block',
+          background: 'rgba(255,255,255,0.2)',
+          borderRadius: 6, padding: '2px 10px',
+          fontSize: '.72rem', letterSpacing: '.5px',
+        }}>
+          🚧 Versión beta · En desarrollo activo
+        </div>
       </header>
 
       {/* Banner estado SEPA */}
@@ -178,13 +189,6 @@ export default function App() {
             onClick={() => cambiarModo('completar')}
           >
             🧊 ¿Con qué tengo?
-          </button>
-          <button
-            type="button"
-            className={`tab${modo === 'historial' ? ' activo' : ''}`}
-            onClick={() => cambiarModo('historial')}
-          >
-            📈 Historial
           </button>
         </div>
       )}
